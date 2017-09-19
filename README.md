@@ -15,6 +15,7 @@ txt_match.get_results() returns a DF with matched records and the cosine sim met
 See : See https://labs.yodas.com/large-scale-matrix-multiplication-with-pyspark-or-how-to-match-two-large-datasets-of-company-1be4b1b2871e
 there are a few tricks to make it efficient and quick (sparse matrix + chunks)
 
+NOTE : this is not distributed ! (non PySpark, only Numpied)
 
 
 
