@@ -92,12 +92,12 @@ class TextMatcher:
         :return: a DF with 1st Id / 1st Text / 2nd Id / 2nd Text / Cosine Sim
         """
         self.get_tfidf_matrices()
-        all_matrices = self.parallelize_matrix(self.XTf1)
+        all_matrices = self.parallelize_matrix(self.tf_matrices[0], rows_per_chunk)
 
         results_generator = (self.find_matches_in_submatrix(csr_matrix(matrix[1], shape=matrix[2]),
-                                                            self.XTf2,
+                                                            self.tf_matrices[1],
                                                             matrix[0],
-                                                            threshold=.9)
+                                                            threshold=threshold)
                              for matrix in all_matrices)
 
         nearest_frn = []
