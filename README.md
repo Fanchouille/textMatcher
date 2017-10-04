@@ -2,7 +2,7 @@
 
 # Use
 txt_match = TextMatcher( inputs_df = (iDf1, iDf2),
-             text_cols = (TextCol1 , TextCol2)
+             text_cols = (TextCol1 , TextCol2),
              id_cols = (iDCol1, idCol2)
             )
 

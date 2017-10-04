@@ -8,7 +8,7 @@ from scipy.sparse import csr_matrix
 
 class TextMatcher:
     # See https://labs.yodas.com/large-scale-matrix-multiplication-with-pyspark-or-how-to-match-two-large-datasets-of-company-1be4b1b2871e
-    def __init__(self, input_dfs, text_cols, id_cols, stop_words=None):
+    def __init__(self, input_dfs, text_cols, id_cols, analyzer='word', ngram_range=(1, 1), stop_words=None):
         """
         Initialize :
         input_dfs : tuple of 2 dataframes (iDf1, iDf2) - DFs with id & text cols => we want to match items based on text cols
@@ -20,6 +20,8 @@ class TextMatcher:
         self.text_cols = text_cols
         self.id_cols = id_cols
         self.stop_words = stop_words
+        self.analyzer = analyzer
+        self.ngram_range = ngram_range
         return
 
     def get_vocabulary(self):
@@ -27,7 +29,7 @@ class TextMatcher:
         Concatenate all texts and create vocabulary from unique
         :return:
         """
-        vect = CountVectorizer(self.stop_words)
+        vect = CountVectorizer(stop_words=self.stop_words, analyzer=self.analyzer, ngram_range=self.ngram_range)
         all_texts = np.unique(np.stack((self.input_dfs[0].loc[:, self.text_cols[0]].values,
                                         self.input_dfs[1].loc[:, self.text_cols[1]].values)).flatten())
         vocabulary = vect.fit(all_texts).vocabulary_
@@ -40,7 +42,8 @@ class TextMatcher:
         :return:
         """
         self.get_vocabulary()
-        tfidf_vect = TfidfVectorizer(stop_words=self.stop_words, vocabulary=self.vocabulary)
+        tfidf_vect = TfidfVectorizer(stop_words=self.stop_words, vocabulary=self.vocabulary, analyzer=self.analyzer,
+                                     ngram_range=self.ngram_range)
         XTf1 = tfidf_vect.fit_transform(self.input_dfs[0].loc[:, self.text_cols[0]].values)
         XTf2 = tfidf_vect.fit_transform(self.input_dfs[1].loc[:, self.text_cols[1]].values)
         self.tf_matrices = (XTf1, XTf2)
