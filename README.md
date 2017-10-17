@@ -9,10 +9,12 @@ there are a few tricks to make it efficient and quick (sparse matrix + chunks)
 NOTE : this is not distributed ! (non PySpark, only Numpied)
 
 
-20171017 : removes some bugs (only fetched the 1st nearest and not all)
-Adds disjoint set that creates unlinked clusters from paired data
-Adds functionnality : create groupId & groupCol (use disjointSet & matches)
-Adds functionnality : build matches only on same groups (with group_cols)
+20171017 : 
+- removes some bugs (only fetched the 1st nearest and not all)
+- Adds disjoint set that creates unlinked clusters from paired data
+- Adds functionnality : create groupId & groupCol (use disjointSet and matches)
+- Adds functionnality : build matches only on same groups (with group_cols)
+- Adds parameters from scikit Word Vectorizer to choose max_features, analyzer and ngram_range
 
 
 
