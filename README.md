@@ -18,4 +18,8 @@ there are a few tricks to make it efficient and quick (sparse matrix + chunks)
 NOTE : this is not distributed ! (non PySpark, only Numpied)
 
 
+20171017 : removes some bugs (only fetched the 1st nearest and not all)
+Adds disjoint set that creates unlinked clusters from paired data
+
+
 

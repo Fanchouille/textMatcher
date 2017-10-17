@@ -8,7 +8,8 @@ from scipy.sparse import csr_matrix
 
 class TextMatcher:
     # See https://labs.yodas.com/large-scale-matrix-multiplication-with-pyspark-or-how-to-match-two-large-datasets-of-company-1be4b1b2871e
-    def __init__(self, input_dfs, text_cols, id_cols, analyzer='word', ngram_range=(1, 1), stop_words=None):
+    def __init__(self, input_dfs, text_cols, id_cols, analyzer='word', ngram_range=(1, 1), stop_words=None,
+                 max_features=5000):
         """
         Initialize :
         input_dfs : tuple of 2 dataframes (iDf1, iDf2) - DFs with id & text cols => we want to match items based on text cols
@@ -22,6 +23,7 @@ class TextMatcher:
         self.stop_words = stop_words
         self.analyzer = analyzer
         self.ngram_range = ngram_range
+        self.max_features = max_features
         return
 
     def get_vocabulary(self):
@@ -29,7 +31,8 @@ class TextMatcher:
         Concatenate all texts and create vocabulary from unique
         :return:
         """
-        vect = CountVectorizer(stop_words=self.stop_words, analyzer=self.analyzer, ngram_range=self.ngram_range)
+        vect = CountVectorizer(stop_words=self.stop_words, analyzer=self.analyzer, ngram_range=self.ngram_range,
+                               max_features=self.max_features)
         all_texts = np.unique(np.stack((self.input_dfs[0].loc[:, self.text_cols[0]].values,
                                         self.input_dfs[1].loc[:, self.text_cols[1]].values)).flatten())
         vocabulary = vect.fit(all_texts).vocabulary_
@@ -80,12 +83,14 @@ class TextMatcher:
         cosimilarities = cosine_similarity(sources, targets)
         for i, cosimilarity in enumerate(cosimilarities):
             cosimilarity = cosimilarity.flatten()
-            # Find the best match by using argsort()[-1]
-            target_index = cosimilarity.argsort()[-1]
+            # Find the best matches
+            target_index = np.where(cosimilarity >= threshold)[0]
             source_index = inputs_start_index + i
-            similarity = cosimilarity[target_index]
-            if (cosimilarity[target_index] >= threshold) & (source_index != target_index):
-                yield (source_index, target_index, similarity)
+            if target_index.shape[0] > 0:
+                for idx in target_index:
+                    similarity = cosimilarity[idx]
+                    if (source_index != idx):
+                        yield (source_index, idx, similarity)
 
     def get_results(self, rows_per_chunk=100, threshold=0.8):
         """
@@ -128,7 +133,7 @@ class TextMatcher:
             text_col_1 = self.text_cols[0]
             text_col_2 = self.text_cols[1]
 
-        lCols = [id_col_1, text_col_1, id_col_2, text_col_2, 'COSINE_SIM']
+        lCols = [id_col_1, id_col_2, text_col_1, text_col_2, 'COSINE_SIM']
         oDf = pd.DataFrame(nearest_frn, columns=lCols)
 
         return oDf
